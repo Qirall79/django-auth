@@ -1,10 +1,12 @@
 from django.conf import settings
-from rest_framework import status
+from rest_framework import status, generics, permissions
 from rest_framework.views import APIView
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView, TokenVerifyView
 from djoser.social.views import ProviderAuthView
+from .serializers import UserSerializer
+from django.contrib.auth import get_user_model
 
 
 class CustomProviderAuthView(ProviderAuthView):
@@ -107,3 +109,8 @@ class LogoutView(APIView):
         response.delete_cookie('refresh')
 
         return response
+    
+class UserView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = UserSerializer
+    queryset = get_user_model().objects.all()
+    permission_classes = [permissions.IsAuthenticated]
