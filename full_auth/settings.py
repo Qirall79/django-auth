@@ -9,10 +9,10 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-from django.core.management.utils import get_random_secret_key
+from django.core.management.utils import get_random_secret_key # type: ignore
 from pathlib import Path
 from os import path, getenv
-import dotenv
+import dotenv # type: ignore
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 	'rest_framework',
 	'djoser',
+	'social_django',
 	'users',
 	'corsheaders',
 ]
@@ -131,6 +132,14 @@ STATIC_ROOT = BASE_DIR / 'static'
 MEDIA_URL = 'media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+AUTHENTICATION_BACKENDS = [
+	'social_core.backends.google.GoogleOAuth2',
+	'users.providers.FortyTwoOAuth2',
+	'social_core.backends.facebook.FacebookOAuth2',
+    'django.contrib.auth.backends.ModelBackend', # Our default auth (email/password)
+	
+]
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -154,6 +163,28 @@ AUTH_COOKIE_HTTP_ONLY = True
 AUTH_COOKIE_PATH = '/'
 AUTH_COOKIE_SAMESITE = 'Lax'
 
+SOCIAL_AUTH_FACEBOOK_KEY = getenv('FACEBOOK_AUTH_KEY')
+SOCIAL_AUTH_FACEBOOK_SECRET = getenv('FACEBOOK_AUTH_SECRET_KEY')
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+	'fields': 'email, first_name, last_name'
+}
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = ['first_name', 'last_name']
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = getenv('GOOGLE_AUTH_KEY')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = getenv('GOOGLE_AUTH_SECRET_KEY')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile',
+    'openid'
+]
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ['first_name', 'last_name']
+
+SOCIAL_AUTH_FORTYTWO_KEY = getenv('FORTYTWO_AUTH_KEY')
+SOCIAL_AUTH_FORTYTWO_SECRET = getenv('FORTYTWO_AUTH_SECRET_KEY')
+
 DJOSER = {
 	'PASSWORD_RESET_CONFIRM_URL': 'password-reset/{uid}/{token}',
 	'SEND_ACTIVATION_EMAIL': True,
@@ -161,6 +192,7 @@ DJOSER = {
 	'USER_CREATE_PASSWORD_RETYPE': True,
 	'PASSWORD_RESET_CONFIRM_RETYPE': True,
 	'TOKEN_MODEL': None,
+	'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': getenv('REDIRECT_URLS').split(',')
 }
 
 AUTH_USER_MODEL = 'users.UserAccount'
